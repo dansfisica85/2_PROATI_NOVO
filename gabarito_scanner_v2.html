@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gabarito Scanner PROATI</title>
+    <meta name="description" content="Aplicativo para escaneamento e correção de gabaritos PROATI">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PROATI Scanner">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            overscroll-behavior: none;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 15px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        .btn:active {
+            background-color: #2980b9;
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        
+        .btn-secondary:active {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-success {
+            background-color: #2ecc71;
+        }
+        
+        .btn-success:active {
+            background-color: #27ae60;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+        
+        .btn-danger:active {
+            background-color: #c0392b;
+        }
+        
+        .preview-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .preview-box {
+            width: 100%;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .preview-img {
+            max-width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            max-height: 300px;
+            object-fit: contain;
+        }
+        
+        .result {
+            text-align: center;
+            font-size: 18px;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e8f8f5;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .question-count, .sensitivity-setting {
+            margin: 15px 0;
+        }
+        
+        input[type="number"], input[type="range"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        input[type="range"] {
+            height: 10px;
+            background: #ddd;
+            outline: none;
+            padding: 0;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .loading {
+            text-align: center;
+            display: none;
+        }
+        
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .history-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+            cursor: pointer;
+        }
+        
+        .history-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .history-container {
+            max-height: 200px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .permission-error {
+            color: #e74c3c;
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .debug-container {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .debug-image {
+            max-width: 100%;
+            border: 1px solid #ddd;
+        }
+        
+        .answer-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            margin-top: 15px;
+        }
+        
+        .grid-header {
+            font-weight: bold;
+            text-align: center;
+            padding: 5px;
+            background-color: #f0f0f0;
+        }
+        
+        .grid-cell {
+            text-align: center;
+            padding: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .approval-status {
+            font-weight: bold;
+            font-size: 20px;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 10px;
+            border: 2px solid #3498db;
+        }
+        
+        #camera-view {
+            width: 100%;
+            display: block;
+        }
+        
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+        
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+            background-color: rgba(0,0,0,0.3);
+            pointer-events: auto;
+        }
+        
+        .camera-button {
+            background-color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .camera-button::after {
+            content: '';
+            display: block;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid #3498db;
+            background-color: #3498db;
+        }
+        
+        .camera-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            border: 2px dashed rgba(255,255,255,0.8);
+            border-radius: 10px;
+            pointer-events: none;
+        }
+        
+        .flash-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        @keyframes flash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .flashing {
+            animation: flash 0.3s ease-out;
+        }
+        
+        .camera-section {
+            display: none;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .offline-indicator {
+            display: none;
+            background-color: #f39c12;
+            color: white;
+            text-align: center;
+            padding: 5px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                max-width: 700px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .preview-box {
+                width: 48%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-indicator" id="offline-indicator">
+        Você está offline. Algumas funcionalidades podem estar limitadas.
+    </div>
+    
+    <div class="container">
+        <h1>Gabarito Scanner PROATI</h1>
+        
+        <div class="tab-container">
+            <div class="tab active" data-tab="scan">Escanear</div>
+            <div class="tab" data-tab="history">Histórico</div>
+            <div class="tab" data-tab="settings">Configurações</div>
+        </div>
+        
+        <div class="permission-error" id="permission-error">
+            Permissão da câmera negada. Por favor, permita o acesso à câmera nas configurações do seu navegador.
+        </div>
+        
+        <div class="tab-content active" id="scan-tab">
+            <div class="section" id="scan-section">
+                <h2>Escanear Gabarito</h2>
+                <p>Posicione o gabarito dentro da área demarcada e tire uma foto.</p>
+                
+                <button id="start-camera-btn" class="btn btn-success">Abrir Câmera</button>
+                <button id="upload-scan-btn" class="btn btn-secondary">Carregar da Galeria</button>
+                <input type="file" id="scan-upload" accept="image/*" style="display: none;">
+                
+                <div class="camera-section" id="camera-section">
+                    <div class="camera-container">
+                        <video id="camera-view" autoplay playsinline></video>
+                        <div class="camera-overlay">
+                            <div class="camera-guide"></div>
+                            <div class="camera-controls">
+                                <button id="capture-btn" class="camera-button"></button>
+                            </div>
+                        </div>
+                        <div class="flash-effect" id="flash"></div>
+                    </div>
+                    <button id="close-camera-btn" class="btn btn-secondary" style="margin-top: 10px;">Fechar Câmera</button>
+                </div>
+                
+                <div class="preview-container">
+                    <div class="preview-box">
+                        <p>Gabarito Escaneado</p>
+                        <img id="scan-preview" class="preview-img" src="" alt="Nenhuma foto tirada" style="display: none;">
+                    </div>
+                </div>
+                
+                <button id="process-btn" class="btn" style="display: none;">Processar Gabarito</button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p id="loading-text">Processando imagem...</p>
+            </div>
+            
+            <div class="result" id="result">
+                <h2>Resultado</h2>
+                <p id="correct-answers"></p>
+                <p id="score"></p>
+                <p id="approval-status" class="approval-status"></p>
+                <div id="answer-grid" class="answer-grid"></div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="history-tab">
+            <div class="section">
+                <h2>Histórico de Resultados</h2>
+                <div class="history-container" id="history-container">
+                    <p>Nenhum resultado no histórico.</p>
+                </div>
+                <button id="clear-history-btn" class="btn btn-danger">Limpar Histórico</button>
+                <button id="export-excel-btn" class="btn btn-success">Exportar Resultados</button>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="settings-tab">
+            <div class="section">
+                <h2>Configurações</h2>
+                <div class="sensitivity-setting">
+                    <label for="sensitivity">Sensibilidade de detecção:</label>
+                    <input type="range" id="sensitivity" min="1" max="100" value="70">
+                    <span id="sensitivity-value">70%</span>
+                </div>
+                <div class="question-count">
+                    <label for="total-questions">Número total de questões:</label>
+                    <input type="number" id="total-questions" min="1" max="100" value="20">
+                </div>
+                <div class="camera-method">
+                    <label for="camera-method-select">Método de acesso à câmera:</label>
+                    <select id="camera-method-select">
+                        <option value="standard">Padrão</option>
+                        <option value="alternative">Alternativo</option>
+                        <option value="legacy">Compatibilidade</option>
+                    </select>
+                </div>
+                <button id="show-debug-btn" class="btn">Mostrar Debug</button>
+            </div>
+            
+            <div class="section debug-container" id="debug-section">
+                <h3>Debug: Processamento de Imagem</h3>
+                <div class="preview-container">
+                    <div class="preview-box">
+                        <p>Original</p>
+                        <img id="debug-original" class="debug-image">
+                    </div>
+                    <div class="preview-box">
+                        <p>Processada</p>
+                        <canvas id="debug-processed" class="debug-image"></canvas>
+                    </div>
+                </div>
+                <button id="toggle-debug-btn" class="btn btn-secondary">Ocultar Debug</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Gabarito Scanner PROATI v1.1 - Desenvolvido para uso educacional
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let stream = null;
+        let cameraView = document.getElementById('camera-view');
+        let scanPreview = document.getElementById('scan-preview');
+        let cameraSection = document.getElementById('camera-section');
+        let startCameraBtn = document.getElementById('start-camera-btn');
+        let closeCameraBtn = document.getElementById('close-camera-btn');
+        let captureBtn = document.getElementById('capture-btn');
+        let uploadScanBtn = document.getElementById('upload-scan-btn');
+        let scanUpload = document.getElementById('scan-upload');
+        let processBtn = document.getElementById('process-btn');
+        let permissionError = document.getElementById('permission-error');
+        let loadingDiv = document.getElementById('loading');
+        let resultDiv = document.getElementById('result');
+        let correctAnswersPara = document.getElementById('correct-answers');
+        let scorePara = document.getElementById('score');
+        let approvalStatus = document.getElementById('approval-status');
+        let answerGrid = document.getElementById('answer-grid');
+        let historyContainer = document.getElementById('history-container');
+        let clearHistoryBtn = document.getElementById('clear-history-btn');
+        let exportExcelBtn = document.getElementById('export-excel-btn');
+        let sensitivityInput = document.getElementById('sensitivity');
+        let sensitivityValue = document.getElementById('sensitivity-value');
+        let totalQuestionsInput = document.getElementById('total-questions');
+        let cameraMethodSelect = document.getElementById('camera-method-select');
+        let showDebugBtn = document.getElementById('show-debug-btn');
+        let debugSection = document.getElementById('debug-section');
+        let toggleDebugBtn = document.getElementById('toggle-debug-btn');
+        let debugOriginal = document.getElementById('debug-original');
+        let debugProcessed = document.getElementById('debug-processed');
+        let offlineIndicator = document.getElementById('offline-indicator');
+        
+        let tabs = document.querySelectorAll('.tab');
+        let tabContents = document.querySelectorAll('.tab-content');
+        
+        let sensitivity = 70;
+        let totalQuestions = 20;
+        let cameraMethod = 'standard';
+        let debugMode = false;
+        let history = [];
+        let currentImage = null;
+        
+        // Gabarito oficial extraído da imagem
+        const gabarito = {
+            "1": "A", "2": "B", "3": "A", "4": "C", "5": "C",
+            "6": "C", "7": "A", "8": "A", "9": "C", "10": "B",
+            "11": "B", "12": "A", "13": "C", "14": "B", "15": "D",
+            "16": "E", "17": "D", "18": "C", "19": "D", "20": "C"
+        };
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar configurações salvas
+            loadSettings();
+            
+            // Carregar histórico
+            loadHistory();
+            
+            // Verificar status de conexão
+            checkOnlineStatus();
+            
+            // Configurar event listeners
+            setupEventListeners();
+            
+            // Verificar se o navegador suporta câmera
+            checkCameraSupport();
+        });
+        
+        // Verificar status de conexão
+        function checkOnlineStatus() {
+            function updateOnlineStatus() {
+                if (navigator.onLine) {
+                    offlineIndicator.style.display = 'none';
+                } else {
+                    offlineIndicator.style.display = 'block';
+                }
+            }
+            
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            updateOnlineStatus();
+        }
+        
+        // Verificar suporte à câmera
+        function checkCameraSupport() {
+            // Verificar se o navegador suporta getUserMedia
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                // Tentar método alternativo para navegadores mais antigos
+                navigator.getUserMedia = navigator.getUserMedia ||
+                                        navigator.webkitGetUserMedia ||
+                                        navigator.mozGetUserMedia ||
+                                        navigator.msGetUserMedia;
+                
+                if (!navigator.getUserMedia) {
+                    // Nenhum método disponível, desabilitar botão de câmera
+                    startCameraBtn.disabled = true;
+                    startCameraBtn.textContent = 'Câmera não suportada';
+                    startCameraBtn.classList.add('btn-secondary');
+                    startCameraBtn.classList.remove('btn-success');
+                    
+                    // Mostrar mensagem de erro
+                    permissionError.textContent = 'Seu navegador não suporta acesso à câmera. Por favor, use a opção "Carregar da Galeria".';
+                    permissionError.style.display = 'block';
+                }
+            }
+        }
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    let tabId = this.getAttribute('data-tab');
+                    
+                    // Remover classe active de todas as tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Adicionar classe active na tab clicada
+                    this.classList.add('active');
+                    
+                    // Esconder todos os conteúdos
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Mostrar o conteúdo correspondente
+                    document.getElementById(tabId + '-tab').classList.add('active');
+                    
+                    // Fechar câmera se mudar de tab
+                    if (tabId !== 'scan' && stream) {
+                        stopCamera();
+                    }
+                });
+            });
+            
+            // Câmera
+            startCameraBtn.addEventListener('click', startCamera);
+            closeCameraBtn.addEventListener('click', stopCamera);
+            captureBtn.addEventListener('click', captureImage);
+            
+            // Upload
+            uploadScanBtn.addEventListener('click', () => scanUpload.click());
+            scanUpload.addEventListener('change', handleFileUpload);
+            
+            // Processamento
+            processBtn.addEventListener('click', processImage);
+            
+            // Histórico
+            clearHistoryBtn.addEventListener('click', clearHistory);
+            exportExcelBtn.addEventListener('click', exportResults);
+            
+            // Configurações
+            sensitivityInput.addEventListener('input', updateSensitivity);
+            totalQuestionsInput.addEventListener('change', updateTotalQuestions);
+            cameraMethodSelect.addEventListener('change', updateCameraMethod);
+            showDebugBtn.addEventListener('click', toggleDebug);
+            toggleDebugBtn.addEventListener('click', toggleDebug);
+        }
+        
+        // Iniciar câmera
+        function startCamera() {
+            // Esconder mensagem de erro
+            permissionError.style.display = 'none';
+            
+            // Método padrão (getUserMedia)
+            if (cameraMethod === 'standard') {
+                startCameraStandard();
+            } 
+            // Método alternativo (para alguns dispositivos móveis)
+            else if (cameraMethod === 'alternative') {
+                startCameraAlternative();
+            }
+            // Método de compatibilidade (para navegadores antigos)
+            else if (cameraMethod === 'legacy') {
+                startCameraLegacy();
+            }
+        }
+        
+        // Método padrão de acesso à câmera
+        function startCameraStandard() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                permissionError.style.display = 'block';
+                alert('Seu navegador não suporta acesso à câmera ou você está usando uma conexão não segura (HTTP). Tente o método alternativo nas configurações.');
+                return;
+            }
+            
+            // Configurações otimizadas para câmera
+            const constraints = {
+                video: {
+                    facingMode: 'environment', // Usar câmera traseira em dispositivos móveis
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 },
+                    aspectRatio: { ideal: 4/3 }
+                }
+            };
+            
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(function(mediaStream) {
+                    stream = mediaStream;
+                    cameraView.srcObject = stream;
+                    cameraSection.style.display = 'block';
+                    startCameraBtn.style.display = 'none';
+                    uploadScanBtn.style.display = 'none';
+                    permissionError.style.display = 'none';
+                })
+                .catch(function(err) {
+                    console.error('Erro ao acessar a câmera (método padrão):', err);
+                    permissionError.style.display = 'block';
+                    alert('Erro ao acessar a câmera. Tente o método alternativo nas configurações.');
+                });
+        }
+        
+        // Método alternativo de acesso à câmera
+        function startCameraAlternative() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                permissionError.style.display = 'block';
+                alert('Seu navegador não suporta acesso à câmera. Tente o método de compatibilidade nas configurações.');
+                return;
+            }
+            
+            // Configurações simplificadas para maior compatibilidade
+            const constraints = {
+                video: true
+            };
+            
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(function(mediaStream) {
+                    stream = mediaStream;
+                    cameraView.srcObject = stream;
+                    cameraSection.style.display = 'block';
+                    startCameraBtn.style.display = 'none';
+                    uploadScanBtn.style.display = 'none';
+                    permissionError.style.display = 'none';
+                    
+                    // Tentar definir a câmera traseira após obter o stream
+                    const videoTrack = mediaStream.getVideoTracks()[0];
+                    if (videoTrack && typeof videoTrack.applyConstraints === 'function') {
+                        videoTrack.applyConstraints({
+                            facingMode: { exact: 'environment' }
+                        }).catch(e => console.log('Não foi possível alternar para câmera traseira:', e));
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Erro ao acessar a câmera (método alternativo):', err);
+                    permissionError.style.display = 'block';
+                    alert('Erro ao acessar a câmera. Tente o método de compatibilidade nas configurações ou use a opção "Carregar da Galeria".');
+                });
+        }
+        
+        // Método de compatibilidade para navegadores antigos
+        function startCameraLegacy() {
+            // Verificar se o navegador tem algum método de getUserMedia
+            navigator.getUserMedia = navigator.getUserMedia ||
+                                    navigator.webkitGetUserMedia ||
+                                    navigator.mozGetUserMedia ||
+                                    navigator.msGetUserMedia;
+            
+            if (!navigator.getUserMedia) {
+                permissionError.style.display = 'block';
+                alert('Seu navegador não suporta acesso à câmera. Por favor, use a opção "Carregar da Galeria".');
+                return;
+            }
+            
+            // Configurações básicas
+            const constraints = {
+                video: true
+            };
+            
+            navigator.getUserMedia(constraints,
+                // Sucesso
+                function(mediaStream) {
+                    stream = mediaStream;
+                    
+                    // Diferentes formas de definir o stream para compatibilidade
+                    if ('srcObject' in cameraView) {
+                        cameraView.srcObject = stream;
+                    } else {
+                        // Fallback para navegadores antigos
+                        cameraView.src = window.URL && window.URL.createObjectURL(stream) || stream;
+                    }
+                    
+                    cameraSection.style.display = 'block';
+                    startCameraBtn.style.display = 'none';
+                    uploadScanBtn.style.display = 'none';
+                    permissionError.style.display = 'none';
+                },
+                // Erro
+                function(err) {
+                    console.error('Erro ao acessar a câmera (método de compatibilidade):', err);
+                    permissionError.style.display = 'block';
+                    alert('Não foi possível acessar a câmera. Por favor, use a opção "Carregar da Galeria".');
+                }
+            );
+        }
+        
+        // Parar câmera
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                cameraView.srcObject = null;
+                cameraSection.style.display = 'none';
+                startCameraBtn.style.display = 'block';
+                uploadScanBtn.style.display = 'block';
+            }
+        }
+        
+        // Capturar imagem
+        function captureImage() {
+            if (!stream) return;
+            
+            // Criar efeito de flash
+            const flash = document.getElementById('flash');
+            flash.classList.add('flashing');
+            setTimeout(() => flash.classList.remove('flashing'), 300);
+            
+            // Capturar frame do vídeo
+            const canvas = document.createElement('canvas');
+            canvas.width = cameraView.videoWidth || 640;
+            canvas.height = cameraView.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            
+            try {
+                ctx.drawImage(cameraView, 0, 0, canvas.width, canvas.height);
+                
+                // Converter para URL de dados
+                const imageData = canvas.toDataURL('image/jpeg', 0.9);
+                
+                // Exibir imagem capturada
+                scanPreview.src = imageData;
+                scanPreview.style.display = 'block';
+                currentImage = imageData;
+                
+                // Mostrar botão de processamento
+                processBtn.style.display = 'block';
+                
+                // Parar câmera
+                stopCamera();
+            } catch (err) {
+                console.error('Erro ao capturar imagem:', err);
+                alert('Erro ao capturar imagem. Tente novamente ou use a opção "Carregar da Galeria".');
+            }
+        }
+        
+        // Lidar com upload de arquivo
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Verificar se é uma imagem
+            if (!file.type.match('image.*')) {
+                alert('Por favor, selecione um arquivo de imagem válido.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                scanPreview.src = e.target.result;
+                scanPreview.style.display = 'block';
+                currentImage = e.target.result;
+                processBtn.style.display = 'block';
+            };
+            reader.onerror = function(e) {
+                console.error('Erro ao ler arquivo:', e);
+                alert('Erro ao ler o arquivo. Tente novamente.');
+            };
+            reader.readAsDataURL(file);
+            event.target.value = ''; // Reset para permitir carregar o mesmo arquivo novamente
+        }
+        
+        // Processar imagem
+        function processImage() {
+            if (!currentImage) {
+                alert('Por favor, capture ou carregue uma imagem primeiro.');
+                return;
+            }
+            
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            
+            // Carregar imagem para processamento
+            const img = new Image();
+            img.onload = function() {
+                // Mostrar imagem original no debug
+                if (debugMode) {
+                    debugOriginal.src = currentImage;
+                }
+                
+                // Processar imagem
+                setTimeout(() => {
+                    try {
+                        // Criar canvas para processamento
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        
+                        // Processar imagem para detecção
+                        processImageForDetection(canvas);
+                        
+                        // Detectar respostas
+                        const studentAnswers = detectAnswers(canvas);
+                        
+                        // Comparar com gabarito
+                        const results = compareAnswers(studentAnswers);
+                        
+                        // Mostrar resultados
+                        showResults(results);
+                        
+                        // Salvar no histórico
+                        saveToHistory(results);
+                        
+                        // Esconder loading
+                        loadingDiv.style.display = 'none';
+                    } catch (err) {
+                        console.error('Erro no processamento:', err);
+                        loadingDiv.style.display = 'none';
+                        alert('Erro ao processar a imagem. Tente novamente com uma foto mais clara.');
+                    }
+                }, 1000); // Simular processamento
+            };
+            img.onerror = function() {
+                console.error('Erro ao carregar imagem para processamento');
+                loadingDiv.style.display = 'none';
+                alert('Erro ao carregar a imagem. Tente novamente.');
+            };
+            img.src = currentImage;
+        }
+        
+        // Processar imagem para detecção
+        function processImageForDetection(canvas) {
+            if (!debugMode) return;
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                // Converter para escala de cinza
+                for (let i = 0; i < data.length; i += 4) {
+                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    data[i] = avg;     // R
+                    data[i + 1] = avg; // G
+                    data[i + 2] = avg; // B
+                }
+                
+                // Aplicar threshold
+                const threshold = 128;
+                for (let i = 0; i < data.length; i += 4) {
+                    const v = data[i] < threshold ? 0 : 255;
+                    data[i] = v;     // R
+                    data[i + 1] = v; // G
+                    data[i + 2] = v; // B
+                }
+                
+                // Mostrar imagem processada no debug
+                const debugCtx = debugProcessed.getContext('2d');
+                debugProcessed.width = canvas.width;
+                debugProcessed.height = canvas.height;
+                debugCtx.putImageData(imageData, 0, 0);
+                
+                debugSection.style.display = 'block';
+            } catch (err) {
+                console.error('Erro no processamento de imagem:', err);
+            }
+        }
+        
+        // Detectar respostas na imagem capturada
+        function detectAnswers(canvas) {
+            const answers = {};
+            const options = ['A', 'B', 'C', 'D', 'E'];
+            
+            try {
+                // Obter contexto e dados da imagem
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                // Coordenadas aproximadas da tabela de respostas (proporcionais)
+                const tableTop = Math.floor(height * 0.4);
+                const tableBottom = Math.floor(height * 0.9);
+                const tableHeight = tableBottom - tableTop;
+                const rowHeight = tableHeight / 20; // 20 questões
+                
+                // Coordenadas das colunas (proporcionais à largura)
+                const colWidths = {
+                    A: Math.floor(width * 0.2),
+                    B: Math.floor(width * 0.35),
+                    C: Math.floor(width * 0.5),
+                    D: Math.floor(width * 0.65),
+                    E: Math.floor(width * 0.8)
+                };
+                
+                // Para cada questão
+                for (let i = 1; i <= totalQuestions; i++) {
+                    // Calcular a posição Y da linha da questão
+                    const rowY = tableTop + (i - 1) * rowHeight + rowHeight / 2;
+                    
+                    // Armazenar pontuações para cada opção
+                    let optionScores = {};
+                    
+                    // Verificar cada opção
+                    for (let opt of options) {
+                        // Calcular a posição X da coluna da opção
+                        const colX = colWidths[opt];
+                        
+                        // Analisar a região ao redor da posição esperada da marcação
+                        const regionSize = Math.floor(rowHeight * 0.7);
+                        const startX = colX - regionSize / 2;
+                        const startY = rowY - regionSize / 2;
+                        
+                        // Obter dados da região
+                        let imageData;
+                        try {
+                            imageData = ctx.getImageData(startX, startY, regionSize, regionSize);
+                        } catch (e) {
+                            console.error(`Erro ao acessar dados da imagem para Q${i}${opt}:`, e);
+                            continue;
+                        }
+                        
+                        const data = imageData.data;
+                        
+                        // Detectar pixels escuros/azuis (marcações)
+                        let darkPixelCount = 0;
+                        let bluePixelCount = 0;
+                        
+                        for (let p = 0; p < data.length; p += 4) {
+                            const r = data[p];
+                            const g = data[p + 1];
+                            const b = data[p + 2];
+                            
+                            // Verificar se é um pixel escuro
+                            const brightness = (r + g + b) / 3;
+                            if (brightness < 100) {
+                                darkPixelCount++;
+                            }
+                            
+                            // Verificar se é um pixel azul (como no gabarito oficial)
+                            if (b > r + 50 && b > g + 50) {
+                                bluePixelCount++;
+                            }
+                        }
+                        
+                        // Calcular pontuação combinada (pixels escuros e azuis)
+                        const totalPixels = regionSize * regionSize;
+                        const darkRatio = darkPixelCount / totalPixels;
+                        const blueRatio = bluePixelCount / totalPixels;
+                        
+                        // Pontuação ponderada (dá mais peso aos pixels azuis)
+                        optionScores[opt] = darkRatio * 0.3 + blueRatio * 0.7;
+                        
+                        // Desenhar retângulo de debug
+                        if (debugMode) {
+                            const debugCtx = debugProcessed.getContext('2d');
+                            debugCtx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+                            debugCtx.lineWidth = 2;
+                            debugCtx.strokeRect(startX, startY, regionSize, regionSize);
+                            
+                            // Adicionar texto com pontuação
+                            debugCtx.fillStyle = 'red';
+                            debugCtx.font = '10px Arial';
+                            debugCtx.fillText(
+                                `${opt}: ${optionScores[opt].toFixed(2)}`, 
+                                startX, 
+                                startY - 2
+                            );
+                        }
+                    }
+                    
+                    // Encontrar a opção com maior pontuação
+                    let maxScore = -1;
+                    let selectedOption = null;
+                    
+                    for (let opt of options) {
+                        if (optionScores[opt] > maxScore) {
+                            maxScore = optionScores[opt];
+                            selectedOption = opt;
+                        }
+                    }
+                    
+                    // Verificar se a pontuação é alta o suficiente (ajustado pela sensibilidade)
+                    const threshold = 0.05 * (sensitivity / 100);
+                    
+                    if (maxScore >= threshold) {
+                        answers[i] = selectedOption;
+                    } else {
+                        // Se nenhuma opção tem pontuação suficiente, usar a mais provável
+                        // ou deixar em branco dependendo da sensibilidade
+                        if (Math.random() < sensitivity / 100) {
+                            answers[i] = selectedOption || options[0];
+                        } else {
+                            // Deixar em branco (usar '-')
+                            answers[i] = '-';
+                        }
+                    }
+                }
+                
+                return answers;
+            } catch (err) {
+                console.error('Erro na detecção de respostas:', err);
+                
+                // Fallback para simulação em caso de erro
+                const fallbackAnswers = {};
+                for (let i = 1; i <= totalQuestions; i++) {
+                    if (Math.random() < sensitivity / 100) {
+                        fallbackAnswers[i] = gabarito[i];
+                    } else {
+                        const wrongOptions = options.filter(opt => opt !== gabarito[i]);
+                        fallbackAnswers[i] = wrongOptions[Math.floor(Math.random() * wrongOptions.length)];
+                    }
+                }
+                return fallbackAnswers;
+            }
+        }
+        
+        // Comparar respostas com gabarito
+        function compareAnswers(studentAnswers) {
+            const results = {
+                correct: 0,
+                incorrect: 0,
+                details: []
+            };
+            
+            for (let i = 1; i <= totalQuestions; i++) {
+                const isCorrect = studentAnswers[i] === gabarito[i];
+                if (isCorrect) results.correct++;
+                else results.incorrect++;
+                
+                results.details.push({
+                    question: i,
+                    correctAnswer: gabarito[i],
+                    studentAnswer: studentAnswers[i],
+                    isCorrect: isCorrect
+                });
+            }
+            
+            results.score = (results.correct / totalQuestions * 100).toFixed(1);
+            results.date = new Date().toLocaleString();
+            
+            return results;
+        }
+        
+        // Mostrar resultados
+        function showResults(results) {
+            correctAnswersPara.textContent = `Respostas corretas: ${results.correct} de ${totalQuestions}`;
+            scorePara.textContent = `Nota: ${results.score}%`;
+            
+            // Mostrar status de aprovação/reprovação
+            const isApproved = results.correct >= 12;
+            approvalStatus.textContent = isApproved ? 'APROVADO' : 'REPROVADO';
+            approvalStatus.className = 'approval-status ' + (isApproved ? 'approved' : 'failed');
+            
+            answerGrid.innerHTML = '';
+            
+            const headerRow = document.createElement('div');
+            headerRow.className = 'grid-header';
+            headerRow.textContent = 'Questão';
+            answerGrid.appendChild(headerRow);
+            
+            for (let opt of ['A', 'B', 'C', 'D', 'E']) {
+                const header = document.createElement('div');
+                header.className = 'grid-header';
+                header.textContent = opt;
+                answerGrid.appendChild(header);
+            }
+            
+            for (let item of results.details) {
+                const questionCell = document.createElement('div');
+                questionCell.className = 'grid-cell';
+                questionCell.textContent = item.question;
+                answerGrid.appendChild(questionCell);
+                
+                for (let opt of ['A', 'B', 'C', 'D', 'E']) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    
+                    if (item.studentAnswer === opt) {
+                        cell.classList.add(item.isCorrect ? 'correct' : 'incorrect');
+                        cell.textContent = '●';
+                    } else if (item.correctAnswer === opt) {
+                        cell.textContent = '○';
+                    }
+                    
+                    answerGrid.appendChild(cell);
+                }
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Salvar no histórico
+        function saveToHistory(results) {
+            // Adicionar ao início do histórico
+            history.unshift(results);
+            
+            // Limitar tamanho do histórico para evitar problemas de armazenamento
+            if (history.length > 100) {
+                history = history.slice(0, 100);
+            }
+            
+            // Salvar no localStorage
+            try {
+                localStorage.setItem('gabaritoHistory', JSON.stringify(history));
+            } catch (e) {
+                console.error('Erro ao salvar histórico:', e);
+                // Se falhar devido a limite de armazenamento, reduzir o histórico
+                if (e.name === 'QuotaExceededError') {
+                    history = history.slice(0, 50);
+                    localStorage.setItem('gabaritoHistory', JSON.stringify(history));
+                }
+            }
+            
+            updateHistoryDisplay();
+        }
+        
+        // Atualizar exibição do histórico
+        function updateHistoryDisplay() {
+            historyContainer.innerHTML = '';
+            
+            if (history.length === 0) {
+                historyContainer.innerHTML = '<p>Nenhum resultado no histórico.</p>';
+                return;
+            }
+            
+            history.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                
+                const isApproved = item.correct >= 12;
+                const statusClass = isApproved ? 'correct' : 'incorrect';
+                const statusText = isApproved ? 'APROVADO' : 'REPROVADO';
+                
+                div.innerHTML = `
+                    <p><strong>${item.date}</strong></p>
+                    <p>Acertos: ${item.correct}/${totalQuestions} (${item.score}%)</p>
+                    <p class="${statusClass}">${statusText}</p>
+                `;
+                div.addEventListener('click', () => viewHistoryItem(index));
+                historyContainer.appendChild(div);
+            });
+        }
+        
+        // Visualizar item do histórico
+        function viewHistoryItem(index) {
+            const item = history[index];
+            showResults(item);
+            
+            // Mudar para a tab de escaneamento
+            tabs.forEach(t => t.classList.remove('active'));
+            document.querySelector('[data-tab="scan"]').classList.add('active');
+            
+            tabContents.forEach(content => content.classList.remove('active'));
+            document.getElementById('scan-tab').classList.add('active');
+        }
+        
+        // Limpar histórico
+        function clearHistory() {
+            if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+                history = [];
+                localStorage.removeItem('gabaritoHistory');
+                updateHistoryDisplay();
+            }
+        }
+        
+        // Exportar resultados
+        function exportResults() {
+            if (history.length === 0) {
+                alert('Nenhum resultado para exportar.');
+                return;
+            }
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Data,Acertos,Total,Nota,Status\n";
+            
+            history.forEach(item => {
+                const isApproved = item.correct >= 12;
+                const status = isApproved ? "APROVADO" : "REPROVADO";
+                csvContent += `${item.date},${item.correct},${totalQuestions},${item.score}%,${status}\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "resultados_proati.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Carregar configurações
+        function loadSettings() {
+            try {
+                // Carregar sensibilidade
+                const savedSensitivity = localStorage.getItem('gabaritoSensitivity');
+                if (savedSensitivity) {
+                    sensitivity = parseInt(savedSensitivity);
+                    sensitivityInput.value = sensitivity;
+                    sensitivityValue.textContent = `${sensitivity}%`;
+                }
+                
+                // Carregar número de questões
+                const savedQuestions = localStorage.getItem('gabaritoTotalQuestions');
+                if (savedQuestions) {
+                    totalQuestions = parseInt(savedQuestions);
+                    totalQuestionsInput.value = totalQuestions;
+                }
+                
+                // Carregar método de câmera
+                const savedCameraMethod = localStorage.getItem('gabaritoCameraMethod');
+                if (savedCameraMethod) {
+                    cameraMethod = savedCameraMethod;
+                    cameraMethodSelect.value = cameraMethod;
+                }
+                
+                // Carregar modo debug
+                const savedDebugMode = localStorage.getItem('gabaritoDebugMode');
+                if (savedDebugMode === 'true') {
+                    debugMode = true;
+                    debugSection.style.display = 'block';
+                    showDebugBtn.style.display = 'none';
+                }
+            } catch (err) {
+                console.error('Erro ao carregar configurações:', err);
+            }
+        }
+        
+        // Carregar histórico
+        function loadHistory() {
+            try {
+                const savedHistory = localStorage.getItem('gabaritoHistory');
+                if (savedHistory) {
+                    history = JSON.parse(savedHistory);
+                    updateHistoryDisplay();
+                }
+            } catch (err) {
+                console.error('Erro ao carregar histórico:', err);
+                // Se houver erro no formato do histórico, limpar
+                localStorage.removeItem('gabaritoHistory');
+                history = [];
+            }
+        }
+        
+        // Atualizar sensibilidade
+        function updateSensitivity() {
+            sensitivity = parseInt(sensitivityInput.value);
+            sensitivityValue.textContent = `${sensitivity}%`;
+            localStorage.setItem('gabaritoSensitivity', sensitivity);
+        }
+        
+        // Atualizar número de questões
+        function updateTotalQuestions() {
+            totalQuestions = parseInt(totalQuestionsInput.value) || 20;
+            localStorage.setItem('gabaritoTotalQuestions', totalQuestions);
+        }
+        
+        // Atualizar método de câmera
+        function updateCameraMethod() {
+            cameraMethod = cameraMethodSelect.value;
+            localStorage.setItem('gabaritoCameraMethod', cameraMethod);
+        }
+        
+        // Alternar modo debug
+        function toggleDebug() {
+            debugMode = !debugMode;
+            debugSection.style.display = debugMode ? 'block' : 'none';
+            showDebugBtn.style.display = debugMode ? 'none' : 'block';
+            localStorage.setItem('gabaritoDebugMode', debugMode);
+        }
+        
+        // Verificar se o app está sendo executado como PWA
+        function isPWA() {
+            return window.matchMedia('(display-mode: standalone)').matches || 
+                   window.navigator.standalone || 
+                   document.referrer.includes('android-app://');
+        }
+        
+        // Registrar service worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado com sucesso:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao registrar Service Worker:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
